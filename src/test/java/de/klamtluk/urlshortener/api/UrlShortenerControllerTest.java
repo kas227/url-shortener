@@ -7,19 +7,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class UrlShortenerControllerTest {
 
-    static final String URL_PARAM = "url";
     public static final int MAX_LENGTH = 7;
 
     @Autowired
@@ -34,8 +31,14 @@ class UrlShortenerControllerTest {
     @Test
     public void shouldReturnBadRequestWhenUrlMalformed() throws Exception {
         this.mockMvc.perform(get("/*="))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString(URL_PARAM)));
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void shouldFailForNonExistingUrl() throws Exception {
+        final String nonExistingUrl = "123";
+        this.mockMvc.perform(get("/" + nonExistingUrl))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -72,10 +75,4 @@ class UrlShortenerControllerTest {
                 .getContentAsString();
     }
 
-    @Test
-    public void shouldFailForNonExistingUrl() throws Exception {
-        final String nonExistingUrl = "123";
-        this.mockMvc.perform(get("/" + nonExistingUrl))
-                .andExpect(status().isNotFound());
-    }
 }
