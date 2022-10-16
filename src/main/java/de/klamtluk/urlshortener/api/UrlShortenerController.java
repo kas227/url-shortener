@@ -25,7 +25,11 @@ public class UrlShortenerController {
 
     @PostMapping
     public String createShortUrl(@RequestBody @Valid CreateShortUrlDto url) {
-        return urlShortenerService.createShortUrl(url.url());
+        if (url.hasAlias()) {
+            return urlShortenerService.createShortUrl(url.url(), url.alias());
+        } else {
+            return urlShortenerService.createShortUrl(url.url());
+        }
     }
 
     @GetMapping(path = "/{url}")

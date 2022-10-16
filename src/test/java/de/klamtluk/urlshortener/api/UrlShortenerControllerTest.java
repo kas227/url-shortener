@@ -87,6 +87,21 @@ class UrlShortenerControllerTest {
     }
 
     @Test
+    public void shouldFailForPrefixedAlias() throws Exception {
+        final var longUrl = "https://localhost/long-url";
+        final var alias = "=mercedes";
+        this.mockMvc.perform(post("/")
+                        .content(String.format("""
+                                {
+                                    "url": "%s",
+                                    "alias": "%s"
+                                }
+                                """, longUrl, alias))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void shouldRedirectForAlias() throws Exception {
         final var longUrl = "https://localhost/long-url";
         final var alias = "mercedes";
