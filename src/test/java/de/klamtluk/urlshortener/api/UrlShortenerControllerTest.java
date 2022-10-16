@@ -2,19 +2,25 @@ package de.klamtluk.urlshortener.api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@SpringBootTest
+@AutoConfigureMockMvc
 class UrlShortenerControllerTest {
 
     static final String URL_PARAM = "url";
+    public static final int MAX_LENGTH = 7;
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,6 +46,21 @@ class UrlShortenerControllerTest {
     }
 
     @Test
+    public void shouldShortenUrl() throws Exception {
+        final var longUrl = "https://localhost/long-url";
+        final var shortenedUrl = this.mockMvc.perform(post("/")
+                        .content(String.format("{\"url\" : \"%s\"}", longUrl))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertTrue(shortenedUrl.length() <= MAX_LENGTH);
+    }
+
+    @Test
     public void shouldRedirectedForExistingUrl() throws Exception {
         final String existingUrl = createNewShortUrl();
 
@@ -51,7 +72,8 @@ class UrlShortenerControllerTest {
         return this.mockMvc.perform(post("/")
                         .content("""
                                 {"url" : "https://localhost/long-url"}
-                                """))
+                                """)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
