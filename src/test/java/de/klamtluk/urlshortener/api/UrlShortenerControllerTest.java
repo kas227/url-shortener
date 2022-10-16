@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,7 +57,7 @@ class UrlShortenerControllerTest {
     public void shouldRedirectedForExistingUrl() throws Exception {
         final String existingUrl = createNewShortUrl();
 
-        this.mockMvc.perform(get("/"+existingUrl))
+        this.mockMvc.perform(get("/" + existingUrl))
                 .andExpect(status().isPermanentRedirect());
     }
 

@@ -1,10 +1,10 @@
 package de.klamtluk.urlshortener.api;
 
 import de.klamtluk.urlshortener.service.UrlShortenerService;
-import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
@@ -40,13 +40,14 @@ public class UrlShortenerController {
                 .build();
     }
 
-    @ExceptionHandler({ConstraintViolationException.class, MissingServletRequestParameterException.class})
+    @ExceptionHandler({ConstraintViolationException.class, MissingServletRequestParameterException.class,
+            HttpMessageNotReadableException.class})
     public ResponseEntity<String> handleConstraintViolations(Exception ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({NoSuchElementException.class})
     public ResponseEntity<String> handleNotFound(Exception ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("404 - Not Found", HttpStatus.NOT_FOUND);
     }
 }
