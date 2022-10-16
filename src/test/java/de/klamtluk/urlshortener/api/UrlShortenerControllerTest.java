@@ -10,7 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -48,7 +48,6 @@ class UrlShortenerControllerTest {
                         .content(String.format("{\"url\" : \"%s\"}", longUrl))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(print())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -58,14 +57,7 @@ class UrlShortenerControllerTest {
 
     @Test
     public void shouldRedirectedForExistingUrl() throws Exception {
-        final String existingUrl = createNewShortUrl();
-
-        this.mockMvc.perform(get("/" + existingUrl))
-                .andExpect(status().isPermanentRedirect());
-    }
-
-    private String createNewShortUrl() throws Exception {
-        return this.mockMvc.perform(post("/")
+        final String existingUrl = this.mockMvc.perform(post("/")
                         .content("""
                                 {"url" : "https://localhost/long-url"}
                                 """)
@@ -73,6 +65,42 @@ class UrlShortenerControllerTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
+        this.mockMvc.perform(get("/" + existingUrl))
+                .andExpect(status().isPermanentRedirect());
     }
 
+    @Test
+    public void shouldCreateAliasForUrl() throws Exception {
+        final var longUrl = "https://localhost/long-url";
+        final var alias = "mercedes";
+        this.mockMvc.perform(post("/")
+                        .content(String.format("""
+                                {
+                                    "url": "%s",
+                                    "alias": "%s"
+                                }
+                                """, longUrl, alias))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(alias));
+    }
+
+    @Test
+    public void shouldRedirectForAlias() throws Exception {
+        final var longUrl = "https://localhost/long-url";
+        final var alias = "mercedes";
+        this.mockMvc.perform(post("/")
+                        .content(String.format("""
+                                {
+                                    "url": "%s",
+                                    "alias": "%s"
+                                }
+                                """, longUrl, alias))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/" + alias))
+                .andExpect(status().isPermanentRedirect());
+    }
 }
