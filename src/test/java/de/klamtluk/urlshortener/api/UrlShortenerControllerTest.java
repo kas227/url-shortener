@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class UrlShortenerControllerTest {
 
     public static final int MAX_LENGTH = 7;
@@ -84,6 +86,29 @@ class UrlShortenerControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(alias));
+    }
+
+    @Test
+    public void shouldFailForDuplicateAlias() throws Exception {
+        final var longUrl = "https://localhost/long-url";
+        final var alias = "mercedes";
+        final var body = String.format("""
+                {
+                    "url": "%s",
+                    "alias": "%s"
+                }
+                """, longUrl, alias);
+
+        this.mockMvc.perform(post("/")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(alias));
+
+        this.mockMvc.perform(post("/")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

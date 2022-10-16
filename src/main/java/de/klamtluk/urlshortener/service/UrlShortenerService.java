@@ -62,6 +62,9 @@ public class UrlShortenerService {
         if (alias.startsWith(AUTO_GENERATION_PREFIX)) {
             throw new IllegalArgumentException("Alias cannot start with " + AUTO_GENERATION_PREFIX);
         }
+        if(urlAliasRepository.existsById(alias)){
+            throw new IllegalArgumentException("Alias already exists: " + alias);
+        }
 
         logger.info("Creating new alias {} for url {}", alias, url);
 

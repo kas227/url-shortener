@@ -13,7 +13,7 @@ import java.util.NoSuchElementException;
 @ControllerAdvice
 public class GlobalExceptionHandling {
     @ExceptionHandler({ConstraintViolationException.class, MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class})
+            HttpMessageNotReadableException.class, IllegalArgumentException.class})
     public ResponseEntity<String> handleConstraintViolations(Exception ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
