@@ -43,7 +43,8 @@ public class UrlShortenerService {
     }
 
     public String resolveShortUrl(String url) {
-        final var decodedId = urlEncoder.decode(url);
+        final var unprefixedUrl = url.substring(1);
+        final var decodedId = urlEncoder.decode(unprefixedUrl);
         return urlRepository
                 .findById(decodedId)
                 .orElseThrow()

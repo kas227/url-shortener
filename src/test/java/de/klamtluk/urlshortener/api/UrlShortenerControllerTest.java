@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,20 +28,13 @@ class UrlShortenerControllerTest {
 
     @Test
     public void shouldReturnBadRequestWhenUrlMissing() throws Exception {
-        this.mockMvc.perform(get("/")).andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString(URL_PARAM)));
+        this.mockMvc.perform(get("/"))
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void shouldReturnBadRequestWhenUrlMalformed() throws Exception {
-        this.mockMvc.perform(get("/").queryParam(URL_PARAM, "not a url"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString(URL_PARAM)));
-    }
-
-    @Test
-    public void shouldReturnBadRequestWhenUrlEmpty() throws Exception {
-        this.mockMvc.perform(get("/").queryParam(URL_PARAM, ""))
+        this.mockMvc.perform(get("/*="))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString(URL_PARAM)));
     }
@@ -64,7 +58,7 @@ class UrlShortenerControllerTest {
     public void shouldRedirectedForExistingUrl() throws Exception {
         final String existingUrl = createNewShortUrl();
 
-        this.mockMvc.perform(get("/").queryParam(URL_PARAM, existingUrl))
+        this.mockMvc.perform(get("/"+existingUrl))
                 .andExpect(status().isPermanentRedirect());
     }
 
@@ -80,9 +74,9 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    public void shouldFailForNotExistingUrl() throws Exception {
+    public void shouldFailForNonExistingUrl() throws Exception {
         final String nonExistingUrl = "123";
-        this.mockMvc.perform(get("/").queryParam(URL_PARAM, nonExistingUrl))
+        this.mockMvc.perform(get("/" + nonExistingUrl))
                 .andExpect(status().isNotFound());
     }
 }
