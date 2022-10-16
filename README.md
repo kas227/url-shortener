@@ -10,6 +10,58 @@ https://www.google.com/search?client=firefox-b-d&q=long+url => https://your.doma
 The application makes use of the [Spring Boot ecosystem](https://docs.spring.io/spring-boot/docs/current/reference/html/index.html) and utilises [Spring Boot Web](https://docs.spring.io/spring-boot/docs/current/reference/html/web.html#web) for web service capabilities and [Spring Data JPA](https://docs.spring.io/spring-boot/docs/current/reference/html/data.html#data) for persistence. 
 Note that the `spring-boot-starter` packages of these dependencies are used. These starters also include other dependencies and default configurations. 
 
+## Getting Started
+Simply start the spring boot application:
+```shell
+./mvnw spring-boot:run
+```
+
+### Endpoints
+
+#### Create Short Url
+`POST` - `/`
+
+```
+{
+    "url": "<YOUR_URL>"
+}
+```
+```
+# 200
+<KEY>
+```
+
+#### Create Alias
+`POST` - `/`
+
+```
+# 200
+{
+    "url": "<YOUR_URL>",
+    "alias": "<YOUR_ALIAS>"
+}
+```
+```
+<KEY/ALIAS>
+```
+
+#### Lookup Url 
+`GET` - `/<KEY>`
+```
+# 308 
+REDIRECT
+```
+
+#### Get Stats for <KEY>
+`GET` - `/api/stats?key=<KEY>`
+```
+# 200 
+{
+    "url": "<URL>",
+    "clicks": <AMOUNT_OF_CLICKS> 
+}
+```
+
 ### Research 
 Since this is an exercise with predefined requirements the following section will document some insights *how* and *why* certain aspects of the application are designed.
 
@@ -70,5 +122,3 @@ should only handle web service specifics like understanding web requests and ser
 Data access is achieved with repositories.
 
 
-
-## Getting Started
