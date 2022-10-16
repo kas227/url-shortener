@@ -1,35 +1,39 @@
 package de.klamtluk.urlshortener.api;
 
 import de.klamtluk.urlshortener.service.UrlShortenerService;
+import de.klamtluk.urlshortener.service.events.UrlInteractionPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.NoSuchElementException;
 
 @RestController
 @Validated
 public class UrlShortenerController {
     @Autowired
-    UrlShortenerService urlShortenerService;
+    private UrlShortenerService urlShortenerService;
+
+    @Autowired
+    private UrlInteractionPublisher urlInteractionPublisher;
 
     @PostMapping
     public String createShortUrl(@RequestBody @Valid CreateShortUrlDto url) {
+        final String key;
         if (url.hasAlias()) {
-            return urlShortenerService.createShortUrl(url.url(), url.alias());
+            key = urlShortenerService.createShortUrl(url.url(), url.alias());
         } else {
-            return urlShortenerService.createShortUrl(url.url());
+            key = urlShortenerService.createShortUrl(url.url());
         }
+
+        urlInteractionPublisher.urlCreated(key);
+        return key;
     }
 
     @GetMapping(path = "/{url}")
@@ -42,16 +46,5 @@ public class UrlShortenerController {
         return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
                 .location(redirectTarget)
                 .build();
-    }
-
-    @ExceptionHandler({ConstraintViolationException.class, MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class})
-    public ResponseEntity<String> handleConstraintViolations(Exception ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler({NoSuchElementException.class})
-    public ResponseEntity<String> handleNotFound(Exception ex) {
-        return new ResponseEntity<>("404 - Not Found", HttpStatus.NOT_FOUND);
     }
 }

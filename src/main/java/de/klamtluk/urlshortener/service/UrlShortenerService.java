@@ -4,6 +4,7 @@ import de.klamtluk.urlshortener.repository.UrlAlias;
 import de.klamtluk.urlshortener.repository.UrlAliasRepository;
 import de.klamtluk.urlshortener.repository.UrlEntry;
 import de.klamtluk.urlshortener.repository.UrlEntryRepository;
+import de.klamtluk.urlshortener.service.events.UrlInteractionPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class UrlShortenerService {
 
     @Autowired
     private UrlEncoder urlEncoder;
+
+    @Autowired
+    private UrlInteractionPublisher urlInteractionPublisher;
 
     /**
      * Create a shorted url for the passed in url and persist it.
@@ -68,6 +72,8 @@ public class UrlShortenerService {
     }
 
     public String resolveShortUrl(String url) {
+        urlInteractionPublisher.urlOpened(url);
+
         if (isGenerated(url)) {
             return resolveGeneratedUrl(url);
         } else {
