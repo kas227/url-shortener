@@ -1,8 +1,8 @@
 package de.klamtluk.urlshortener.api;
 
-import de.klamtluk.urlshortener.repository.UrlStatsRepository;
-import de.klamtluk.urlshortener.service.UrlEncoder;
-import de.klamtluk.urlshortener.service.UrlShortenerService;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
+import de.klamtluk.urlshortener.repository.UrlStatsRepository;
 
 @RestController
 @RequestMapping(path = "/api/stats")
@@ -19,12 +18,6 @@ import javax.validation.constraints.Pattern;
 public class UrlStatsController {
     @Autowired
     private UrlStatsRepository urlStatsRepository;
-
-    @Autowired
-    private UrlShortenerService shortenerService;
-
-    @Autowired
-    private UrlEncoder urlEncoder;
 
     @GetMapping
     public GetUrlStatsDto getUrlStats(@RequestParam(name = "key") @NotEmpty @Pattern(regexp = "^[=a-zA-Z0-9]+",
